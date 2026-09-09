@@ -3,6 +3,37 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Check, Copy, Heart, ImagePlus, LockKeyhole, Music2, UploadCloud } from 'lucide-react';
 
+async function compressImage(file: File): Promise<File> {
+  if (!file.type.startsWith('image/') || file.size <= 700 * 1024) return file;
+
+  const bitmap = await createImageBitmap(file);
+  const maxSize = 1600;
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    bitmap.close();
+    return file;
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>(resolve =>
+    canvas.toBlob(resolve, 'image/webp', 0.82),
+  );
+  if (!blob || blob.size >= file.size) return file;
+
+  return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, {
+    type: 'image/webp',
+    lastModified: file.lastModified,
+  });
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
@@ -33,13 +64,15 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     setCreatedUrl('');
-    const form = new FormData();
-    form.append('name', name);
-    form.append('message', message);
-    photos.forEach(file => form.append('photos', file));
-    if (music) form.append('music', music);
 
     try {
+      const optimizedPhotos = await Promise.all(photos.map(compressImage));
+      const form = new FormData();
+      form.append('name', name);
+      form.append('message', message);
+      optimizedPhotos.forEach(file => form.append('photos', file));
+      if (music) form.append('music', music);
+
       const res = await fetch('/api/birthdays', { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'فشل إنشاء البطاقة');
