@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function BirthdayPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const birthday = await getBirthday(id);
+  const birthday = await getBirthday(decodeURIComponent(id));
   if (!birthday) notFound();
   return <BirthdayExperience birthday={birthday} />;
 }
