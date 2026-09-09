@@ -29,7 +29,7 @@ export default function BirthdayExperience({ birthday }: { birthday: BirthdayCon
           />
           <div className="fixed left-1/2 bottom-5 z-50 -translate-x-1/2 flex items-center gap-4 rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white backdrop-blur-xl shadow-2xl">
             <Heart className="h-5 w-5 fill-red-500 text-red-500" />
-            <span className="font-playfair text-sm sm:text-base">For {birthday.name}</span>
+            <span className="font-playfair text-sm sm:text-base [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">For {birthday.name}</span>
             <button
               type="button"
               onClick={() => setMusicOn(v => !v)}
@@ -40,7 +40,7 @@ export default function BirthdayExperience({ birthday }: { birthday: BirthdayCon
             </button>
           </div>
           <div className="pointer-events-none fixed inset-x-0 bottom-20 z-40 mx-auto max-w-2xl px-6 text-center text-white/80">
-            <p className="font-playfair text-lg leading-relaxed drop-shadow-lg sm:text-2xl">{birthday.message}</p>
+            <p className="font-playfair text-lg leading-relaxed drop-shadow-lg sm:text-2xl [text-shadow:0_2px_8px_rgba(0,0,0,0.95)]">{birthday.message}</p>
           </div>
         </>
       )}
