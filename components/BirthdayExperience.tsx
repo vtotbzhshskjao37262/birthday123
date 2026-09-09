@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import DomeGallery from '@/components/DomeGallery';
 import InteractionFlow from '@/components/InteractionFlow';
 import type { BirthdayConfig } from '@/lib/birthday';
@@ -9,26 +9,6 @@ import { Heart, Volume2, VolumeX } from 'lucide-react';
 export default function BirthdayExperience({ birthday }: { birthday: BirthdayConfig }) {
   const [showGallery, setShowGallery] = useState(false);
   const [musicOn, setMusicOn] = useState(true);
-
-  useEffect(() => {
-    if (showGallery) return;
-
-    const cleanHappyBirthday = () => {
-      document.querySelectorAll('h1').forEach((heading) => {
-        if (!heading.textContent?.startsWith('Happy Birthday,')) return;
-        heading.childNodes.forEach((node) => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            node.textContent = node.textContent.replace(/!+/g, '');
-          }
-        });
-      });
-    };
-
-    const observer = new MutationObserver(cleanHappyBirthday);
-    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
-    cleanHappyBirthday();
-    return () => observer.disconnect();
-  }, [showGallery]);
 
   return (
     <main className="w-screen h-screen bg-[#060010] overflow-hidden">
