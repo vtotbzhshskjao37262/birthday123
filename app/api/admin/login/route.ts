@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { adminToken } from '@/lib/birthday';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
