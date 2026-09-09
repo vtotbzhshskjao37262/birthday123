@@ -1,25 +1,22 @@
 'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, X, Circle, Sparkles } from 'lucide-react';
+import { Heart, X, Circle } from 'lucide-react';
 
 // --- Background Particles ---
 const BackgroundHearts = () => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
-
     if (!mounted) return null;
-
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(10)].map((_, i) => ( // Reduced to 10 for better performance
+            {[...Array(10)].map((_, i) => (
                 <motion.div
                     key={i}
                     initial={{
                         opacity: 0,
                         y: '110vh',
-                        x: `${(i * 10) + Math.random() * 5}%`, // More deterministic distribution
+                        x: `${(i * 10) + Math.random() * 5}%`,
                         scale: 0.5
                     }}
                     animate={{
@@ -46,14 +43,12 @@ const BackgroundHearts = () => {
 // --- Step 1: Love Mode ---
 const LoveModeStep = ({ onComplete }: { onComplete: () => void }) => {
     const [isOn, setIsOn] = useState(false);
-
     useEffect(() => {
         if (isOn) {
             const timer = setTimeout(() => onComplete(), 3000);
             return () => clearTimeout(timer);
         }
     }, [isOn, onComplete]);
-
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -73,16 +68,13 @@ const LoveModeStep = ({ onComplete }: { onComplete: () => void }) => {
                         <Heart className={`w-24 h-24 transition-all duration-1000 ${isOn ? 'text-red-500 fill-red-500' : 'text-white/10'}`} />
                     </motion.div>
                 </div>
-
                 <div className="flex flex-col items-center space-y-6">
                     <span className={`text-5xl font-playfair transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>
                         Love mode
                     </span>
-
                     <button
                         onClick={() => setIsOn(!isOn)}
-                        className={`group relative w-32 h-16 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] p-1.5 focus:outline-none ${isOn ? 'bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'bg-white/10'
-                            }`}
+                        className={`group relative w-32 h-16 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] p-1.5 focus:outline-none ${isOn ? 'bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'bg-white/10'}`}
                     >
                         <motion.div
                             animate={{ x: isOn ? 64 : 0 }}
@@ -94,7 +86,6 @@ const LoveModeStep = ({ onComplete }: { onComplete: () => void }) => {
                                 className={`transition-colors duration-500 ${isOn ? "text-red-500 fill-red-500" : "text-gray-300"}`}
                             />
                         </motion.div>
-
                         <AnimatePresence>
                             {!isOn && (
                                 <motion.span
@@ -130,7 +121,6 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
     const [isUserTurn, setIsUserTurn] = useState(true);
     const [winner, setWinner] = useState<string | null>(null);
     const [message, setMessage] = useState("Let's play a little game...");
-
     const checkWinner = useCallback((squares: (string | null)[]) => {
         const lines = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -144,21 +134,16 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
         }
         return squares.includes(null) ? null : 'draw';
     }, []);
-
     const makeAIMove = useCallback((currentBoard: (string | null)[]) => {
         const emptyIndices = currentBoard.map((v, i) => v === null ? i : null).filter(v => v !== null) as number[];
         if (emptyIndices.length === 0) return;
-
-        // Extra Easy AI: Purposely avoid the center and pick random spots
         const nonCenterIndices = emptyIndices.filter(i => i !== 4);
         const targetIndex = nonCenterIndices.length > 0
             ? nonCenterIndices[Math.floor(Math.random() * nonCenterIndices.length)]
             : 4;
-
         const newBoard = [...currentBoard];
         newBoard[targetIndex] = 'O';
         setBoard(newBoard);
-
         const result = checkWinner(newBoard);
         if (result) {
             setWinner(result);
@@ -166,14 +151,11 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
             setIsUserTurn(true);
         }
     }, [checkWinner]);
-
     const handleSquareClick = (index: number) => {
         if (board[index] || winner || !isUserTurn) return;
-
         const newBoard = [...board];
         newBoard[index] = 'X';
         setBoard(newBoard);
-
         const result = checkWinner(newBoard);
         if (result) {
             setWinner(result);
@@ -182,11 +164,10 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
             setTimeout(() => makeAIMove(newBoard), 600);
         }
     };
-
     useEffect(() => {
         if (winner === 'X') {
             setMessage("Kamu Memenangkan");
-            setTimeout(() => onComplete(), 3500); // Increased timeout to wait for staggered animation
+            setTimeout(() => onComplete(), 3500);
         } else if (winner === 'O' || winner === 'draw') {
             setMessage(winner === 'draw' ? "Seri! Coba lagi yaa ❤️" : "Hampir! Sekali lagi...");
             setTimeout(() => {
@@ -196,7 +177,6 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
             }, 1500);
         }
     }, [winner, onComplete]);
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -236,7 +216,6 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
                     </button>
                 ))}
             </div>
-
             <AnimatePresence>
                 {winner === 'X' && (
                     <motion.h2
@@ -255,7 +234,6 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
 // --- Step 3: Love Meter ---
 const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
     const [progress, setProgress] = useState(0);
-
     useEffect(() => {
         const interval = setInterval(() => {
             setProgress(prev => {
@@ -269,12 +247,9 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
         }, 40);
         return () => clearInterval(interval);
     }, [onComplete]);
-
-    // SVG parameters for the semi-circle
     const radius = 90;
     const circumference = Math.PI * radius;
     const dashOffset = circumference - (progress / 100) * circumference;
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -283,9 +258,7 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
             className="flex flex-col items-center justify-center space-y-12 w-full max-w-lg px-6 relative z-10"
         >
             <div className="relative w-full aspect-[2/1] flex flex-col items-center justify-end overflow-hidden">
-                {/* SVG Gauge */}
                 <svg viewBox="0 0 200 100" className="w-full h-full absolute top-0 overflow-visible">
-                    {/* Background Path (Gray) */}
                     <path
                         d="M 10,100 A 90,90 0 0 1 190,100"
                         fill="none"
@@ -293,7 +266,6 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
                         strokeWidth="12"
                         strokeLinecap="round"
                     />
-                    {/* Progress Path (Red) */}
                     <motion.path
                         d="M 10,100 A 90,90 0 0 1 190,100"
                         fill="none"
@@ -312,7 +284,6 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
                         </linearGradient>
                     </defs>
                 </svg>
-
                 <div className="z-10 flex flex-col items-center pb-4">
                     <motion.div
                         animate={{ scale: [1, 1.1, 1] }}
@@ -326,8 +297,6 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
                     <span className="text-2xl text-white/60 font-playfair italic mt-2 tracking-widest">Love Intensity</span>
                 </div>
             </div>
-
-            {/* Progress Bar for consistency */}
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/5">
                 <motion.div
                     className="h-full bg-gradient-to-r from-red-500 to-pink-500"
@@ -340,27 +309,21 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
 
 // --- Step 4: Typewriter ---
 const TypewriterStep = ({ onComplete, name }: { onComplete: () => void; name: string }) => {
-    const text = `Happy Birthday, ${name}!!!!`;
+    const text = `Happy Birthday, ${name}`;
     const [displayedText, setDisplayedText] = useState("");
-    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (!isDeleting && displayedText !== text) {
-            timer = setTimeout(() => {
-                setDisplayedText(text.slice(0, displayedText.length + 1));
-            }, 150);
-        } else if (!isDeleting && displayedText === text) {
-            timer = setTimeout(() => setIsDeleting(true), 2500);
-        } else if (isDeleting && displayedText !== "") {
-            timer = setTimeout(() => {
-                setDisplayedText(text.slice(0, displayedText.length - 1));
-            }, 80);
-        } else if (isDeleting && displayedText === "") {
-            onComplete();
+        if (displayedText === text) {
+            const timer = setTimeout(() => onComplete(), 1800);
+            return () => clearTimeout(timer);
         }
+
+        const timer = setTimeout(() => {
+            setDisplayedText(text.slice(0, displayedText.length + 1));
+        }, 90);
+
         return () => clearTimeout(timer);
-    }, [displayedText, isDeleting, onComplete, text]);
+    }, [displayedText, text, onComplete]);
 
     return (
         <motion.div
@@ -383,15 +346,11 @@ const TypewriterStep = ({ onComplete, name }: { onComplete: () => void; name: st
 
 export default function InteractionFlow({ onFlowComplete, name = "You" }: { onFlowComplete: () => void; name?: string }) {
     const [step, setStep] = useState(1);
-
     return (
         <div className="fixed inset-0 z-50 bg-[#060010] flex items-center justify-center overflow-hidden">
-            {/* Visual background layers */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.15)_0%,transparent_70%)]" />
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-
             <BackgroundHearts />
-
             <AnimatePresence mode="wait">
                 {step === 1 && (
                     <LoveModeStep key="step1" onComplete={() => setStep(2)} />
@@ -403,11 +362,9 @@ export default function InteractionFlow({ onFlowComplete, name = "You" }: { onFl
                     <LoveMeterStep key="step3" onComplete={() => setStep(4)} />
                 )}
                 {step === 4 && (
-                    <TypewriterStep key="step4" name={name} onComplete={() => onFlowComplete()} />
+                    <TypewriterStep key="step4" name={name} onComplete={onFlowComplete} />
                 )}
             </AnimatePresence>
-
-            {/* Corner Glows */}
             <div className="absolute -top-24 -left-24 w-96 h-96 bg-red-900/20 blur-[100px] rounded-full" />
             <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-pink-900/20 blur-[100px] rounded-full" />
         </div>
