@@ -16,10 +16,11 @@ export default function BirthdayExperience({ birthday }: { birthday: BirthdayCon
     const cleanHappyBirthday = () => {
       document.querySelectorAll('h1').forEach((heading) => {
         if (!heading.textContent?.startsWith('Happy Birthday,')) return;
-        const firstTextNode = Array.from(heading.childNodes).find(
-          (node): node is Text => node.nodeType === Node.TEXT_NODE,
-        );
-        if (firstTextNode) firstTextNode.textContent = firstTextNode.textContent.replace(/!+$/, '');
+        heading.childNodes.forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            node.textContent = node.textContent.replace(/!+/g, '');
+          }
+        });
       });
     };
 
