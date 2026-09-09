@@ -11,6 +11,7 @@ export async function GET() {
     {
       ok: missing.length === 0,
       missing,
+      version: '2026-09-09-upload-fix-1',
       message: missing.length === 0 ? 'Birthday Studio is configured.' : 'Missing required environment variables.',
     },
     { status: missing.length === 0 ? 200 : 500 },
