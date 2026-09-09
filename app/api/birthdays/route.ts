@@ -3,8 +3,14 @@ import { cookies } from 'next/headers';
 import { createBirthday, isAdminTokenValid, slugify, uploadToStorage } from '@/lib/birthday';
 import { randomUUID } from 'crypto';
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_MUSIC_BYTES = 25 * 1024 * 1024;
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+// Keep these limits reasonable for serverless multipart requests.
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+const MAX_MUSIC_BYTES = 4 * 1024 * 1024;
+const MAX_TOTAL_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export async function POST(request: Request) {
   try {
@@ -23,34 +29,37 @@ export async function POST(request: Request) {
     if (!message) return NextResponse.json({ error: 'اكتب الرسالة' }, { status: 400 });
     if (!photos.length) return NextResponse.json({ error: 'ارفع صورة واحدة على الأقل' }, { status: 400 });
     if (!(music instanceof File) || music.size === 0) return NextResponse.json({ error: 'ارفع الأغنية' }, { status: 400 });
-    if (photos.length > 30) return NextResponse.json({ error: 'الحد الأقصى 30 صورة' }, { status: 400 });
+    if (photos.length > 8) return NextResponse.json({ error: 'الحد الأقصى 8 صور في البطاقة' }, { status: 400 });
     if (photos.some(file => !file.type.startsWith('image/'))) return NextResponse.json({ error: 'كل الملفات في الصور يجب أن تكون صورًا' }, { status: 400 });
-    if (photos.some(file => file.size > MAX_IMAGE_BYTES)) return NextResponse.json({ error: 'حجم الصورة الواحدة يجب ألا يتجاوز 8MB' }, { status: 400 });
+    if (photos.some(file => file.size > MAX_IMAGE_BYTES)) return NextResponse.json({ error: 'حجم الصورة الواحدة يجب ألا يتجاوز 3MB' }, { status: 400 });
     if (!music.type.startsWith('audio/')) return NextResponse.json({ error: 'ملف الأغنية يجب أن يكون صوتيًا' }, { status: 400 });
-    if (music.size > MAX_MUSIC_BYTES) return NextResponse.json({ error: 'حجم الأغنية يجب ألا يتجاوز 25MB' }, { status: 400 });
+    if (music.size > MAX_MUSIC_BYTES) return NextResponse.json({ error: 'حجم الأغنية يجب ألا يتجاوز 4MB' }, { status: 400 });
+
+    const totalUploadBytes = photos.reduce((sum, file) => sum + file.size, 0) + music.size;
+    if (totalUploadBytes > MAX_TOTAL_UPLOAD_BYTES) {
+      return NextResponse.json({ error: 'إجمالي حجم الصور والأغنية يجب ألا يتجاوز 4MB. اضغط الصور أو استخدم ملفات أصغر.' }, { status: 400 });
+    }
 
     const id = randomUUID();
     const baseSlug = slugify(name);
     let slug = baseSlug;
     let suffix = 2;
 
-    // Slug collisions are handled by retrying the database insert with a numbered slug.
-    // Upload paths use the UUID, so files never collide.
-    let photoUrls: string[] = [];
+    const photoUrls: string[] = [];
     for (let i = 0; i < photos.length; i++) {
       const file = photos[i];
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
       photoUrls.push(await uploadToStorage(`${id}/photos/${String(i + 1).padStart(2, '0')}.${ext}`, file));
     }
+
     const musicExt = (music.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
     const musicUrl = await uploadToStorage(`${id}/music.${musicExt}`, music);
 
-    let saved = false;
     let created;
-    for (let attempt = 0; attempt < 20 && !saved; attempt++) {
+    for (let attempt = 0; attempt < 20; attempt++) {
       try {
         created = await createBirthday({ id, slug, name, message, photos: photoUrls, music_url: musicUrl });
-        saved = true;
+        break;
       } catch (error) {
         if (attempt === 19) throw error;
         slug = `${baseSlug}-${suffix++}`;
