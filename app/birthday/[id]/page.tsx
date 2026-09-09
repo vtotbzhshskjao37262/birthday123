@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import BirthdayExperience from '@/components/BirthdayExperience';
 import { getBirthday } from '@/lib/birthday';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export default async function BirthdayPage({ params }: { params: Promise<{ id: string }> }) {
