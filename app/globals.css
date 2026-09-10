@@ -127,3 +127,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Birthday themes: keep the existing layout/animations and recolor only the accents. */
+[data-birthday-theme="pink"] { --birthday-accent: #ec4899; --birthday-accent-strong: #db2777; --birthday-accent-soft: #f9a8d4; --birthday-dark: #831843; }
+[data-birthday-theme="red"] { --birthday-accent: #ef4444; --birthday-accent-strong: #dc2626; --birthday-accent-soft: #fca5a5; --birthday-dark: #7f1d1d; }
+[data-birthday-theme="blue"] { --birthday-accent: #3b82f6; --birthday-accent-strong: #2563eb; --birthday-accent-soft: #93c5fd; --birthday-dark: #1e3a8a; }
+[data-birthday-theme="green"] { --birthday-accent: #22c55e; --birthday-accent-strong: #16a34a; --birthday-accent-soft: #86efac; --birthday-dark: #14532d; }
+
+[data-birthday-theme] .text-red-500,
+[data-birthday-theme] .text-red-400 { color: var(--birthday-accent) !important; }
+[data-birthday-theme] .fill-red-500 { fill: var(--birthday-accent) !important; }
+[data-birthday-theme] [class*="bg-red-500"] { background-color: var(--birthday-accent) !important; }
+[data-birthday-theme] [class*="bg-red-900"] { background-color: color-mix(in srgb, var(--birthday-dark) 20%, transparent) !important; }
+[data-birthday-theme] [class*="border-red-500"] { border-color: color-mix(in srgb, var(--birthday-accent) 20%, transparent) !important; }
+[data-birthday-theme] [class*="shadow-[0_0_30px_rgba(239,68,68"] { box-shadow: 0 0 30px color-mix(in srgb, var(--birthday-accent) 50%, transparent) !important; }
+[data-birthday-theme] [class*="bg-gradient-to-r"] { background-image: linear-gradient(to right, var(--birthday-accent-strong), var(--birthday-accent)) !important; }
+[data-birthday-theme] .text-pink-300 { color: var(--birthday-accent-soft) !important; }
+[data-birthday-theme] [class*="bg-pink-500"] { background-color: var(--birthday-accent) !important; }
+[data-birthday-theme] [class*="bg-pink-900"] { background-color: color-mix(in srgb, var(--birthday-dark) 20%, transparent) !important; }
+[data-birthday-theme] [class*="border-pink-400"] { border-color: color-mix(in srgb, var(--birthday-accent) 20%, transparent) !important; }
+[data-birthday-theme] [class*="text-pink-200"] { color: color-mix(in srgb, var(--birthday-accent-soft) 80%, white) !important; }
