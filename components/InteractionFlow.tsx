@@ -41,7 +41,7 @@ const LoveModeStep = ({ onComplete }: { onComplete: () => void }) => {
                     </motion.div>
                 </div>
                 <div className="flex flex-col items-center space-y-6">
-                    <span className={`text-5xl font-playfair transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>Love mode</span>
+                    <span className={`text-5xl font-playfair transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>A Little Birthday Surprise...</span>
                     <button onClick={() => setIsOn(!isOn)} className={`group relative w-32 h-16 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] p-1.5 focus:outline-none ${isOn ? 'bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'bg-white/10'}`}>
                         <motion.div animate={{ x: isOn ? 64 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }} className="w-13 h-13 bg-white rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.2)] flex items-center justify-center pointer-events-none">
                             <Heart size={24} className={`transition-colors duration-500 ${isOn ? 'text-red-500 fill-red-500' : 'text-gray-300'}`} />
@@ -61,7 +61,7 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
     const [board, setBoard] = useState(Array(9).fill(null));
     const [isUserTurn, setIsUserTurn] = useState(true);
     const [winner, setWinner] = useState<string | null>(null);
-    const [message, setMessage] = useState("Let's play a little game...");
+    const [message, setMessage] = useState("Let's play a little birthday game...");
     const checkWinner = useCallback((squares: (string | null)[]) => {
         const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
         for (const [a, b, c] of lines) {
@@ -95,12 +95,12 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
     };
     useEffect(() => {
         if (winner === 'X') {
-            setMessage('Kamu Memenangkan');
+            setMessage('You won! ❤️');
             const timer = setTimeout(() => onComplete(), 3500);
             return () => clearTimeout(timer);
         }
         if (winner === 'O' || winner === 'draw') {
-            setMessage(winner === 'draw' ? 'Seri! Coba lagi yaa ❤️' : 'Hampir! Sekali lagi...');
+            setMessage(winner === 'draw' ? 'A tie! Try again ❤️' : 'Almost! One more time...');
             const timer = setTimeout(() => {
                 setBoard(Array(9).fill(null));
                 setWinner(null);
@@ -111,7 +111,7 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
     }, [winner, onComplete]);
     return (
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="flex flex-col items-center justify-center space-y-10 relative z-10">
-            <h2 className="text-4xl font-playfair text-white text-center drop-shadow-lg max-w-xs whitespace-pre-line leading-tight">{winner === 'X' ? 'Kamu Memenangkan' : message}</h2>
+            <h2 className="text-4xl font-playfair text-white text-center drop-shadow-lg max-w-xs whitespace-pre-line leading-tight">{winner === 'X' ? 'You won! ❤️' : message}</h2>
             <div className="grid grid-cols-3 gap-3 p-4 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl">
                 {board.map((square, i) => (
                     <button key={i} onClick={() => handleSquareClick(i)} className="w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all duration-300 group">
@@ -128,7 +128,7 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
                 ))}
             </div>
             <AnimatePresence>
-                {winner === 'X' && <motion.h2 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-playfair text-white text-center drop-shadow-lg mt-4">Hatiku</motion.h2>}
+                {winner === 'X' && <motion.h2 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-playfair text-white text-center drop-shadow-lg mt-4">My heart ❤️</motion.h2>}
             </AnimatePresence>
         </motion.div>
     );
@@ -163,7 +163,7 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
                 <div className="z-10 flex flex-col items-center pb-4">
                     <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }}><Heart className="w-16 h-16 text-red-500 fill-red-500 mb-2" /></motion.div>
                     <div className="text-6xl font-black text-white font-mono tracking-tighter">{progress}<span className="text-red-400 text-3xl">%</span></div>
-                    <span className="text-2xl text-white/60 font-playfair italic mt-2 tracking-widest">Love Intensity</span>
+                    <span className="text-2xl text-white/60 font-playfair italic mt-2 tracking-widest">Let's see how special today is... ❤️</span>
                 </div>
             </div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/5"><motion.div className="h-full bg-gradient-to-r from-red-500 to-pink-500" animate={{ width: `${progress}%` }} /></div>
