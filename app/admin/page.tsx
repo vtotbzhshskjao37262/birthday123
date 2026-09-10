@@ -22,9 +22,9 @@ async function compressImage(file: File): Promise<File> {
   return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp', lastModified: file.lastModified });
 }
 
-// Use a plain, high-contrast QR so phone cameras can scan it reliably.
+// Pink QR with high contrast and no decorative elements for reliable scanning.
 function buildQrUrl(url: string) {
-  const params = new URLSearchParams({ text: url, format: 'png', size: '600', margin: '6', ecLevel: 'H' });
+  const params = new URLSearchParams({ text: url, format: 'png', size: '600', margin: '6', dark: 'db2777', light: 'ffffff', ecLevel: 'H' });
   return `https://quickchart.io/qr?${params.toString()}`;
 }
 
