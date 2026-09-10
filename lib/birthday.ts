@@ -1,5 +1,7 @@
 import { createHash } from 'crypto';
 
+export type BirthdayTheme = 'pink' | 'red' | 'blue' | 'green';
+
 export type BirthdayConfig = {
   id: string;
   slug: string;
@@ -12,6 +14,22 @@ export type BirthdayConfig = {
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+export const BIRTHDAY_THEMES: Record<BirthdayTheme, { label: string; color: string }> = {
+  pink: { label: 'وردي', color: '#ec4899' },
+  red: { label: 'أحمر', color: '#ef4444' },
+  blue: { label: 'أزرق', color: '#3b82f6' },
+  green: { label: 'أخضر', color: '#22c55e' },
+};
+
+export function isBirthdayTheme(value: string): value is BirthdayTheme {
+  return value in BIRTHDAY_THEMES;
+}
+
+export function getBirthdayTheme(slug: string): BirthdayTheme {
+  const match = slug.match(/-(pink|red|blue|green)(?:-\d+)?$/);
+  return match && isBirthdayTheme(match[1]) ? match[1] : 'pink';
+}
 
 function assertServerConfig() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
