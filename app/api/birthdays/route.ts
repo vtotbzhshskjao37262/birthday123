@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createBirthday, isAdminTokenValid, slugify, uploadToStorage } from '@/lib/birthday';
+import { createBirthday, isAdminTokenValid, slugify, uploadToStorage, isBirthdayTheme, type BirthdayTheme } from '@/lib/birthday';
 import { randomUUID } from 'crypto';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-// Keep these limits reasonable for serverless multipart requests.
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const MAX_MUSIC_BYTES = 4 * 1024 * 1024;
 const MAX_TOTAL_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -22,6 +21,8 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const name = String(form.get('name') || '').trim();
     const message = String(form.get('message') || '').trim();
+    const themeValue = String(form.get('theme') || 'pink').trim();
+    const theme: BirthdayTheme = isBirthdayTheme(themeValue) ? themeValue : 'pink';
     const music = form.get('music');
     const photos = form.getAll('photos').filter((item): item is File => item instanceof File && item.size > 0);
 
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     const id = randomUUID();
-    const baseSlug = slugify(name);
+    const baseSlug = `${slugify(name)}-${theme}`;
     let slug = baseSlug;
     let suffix = 2;
 
