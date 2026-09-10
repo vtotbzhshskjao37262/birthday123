@@ -2,6 +2,14 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import { Check, Copy, Download, Heart, ImagePlus, LockKeyhole, Music2, UploadCloud } from 'lucide-react';
+import type { BirthdayTheme } from '@/lib/birthday';
+
+const themeOptions: { id: BirthdayTheme; label: string; color: string }[] = [
+  { id: 'pink', label: 'وردي', color: '#ec4899' },
+  { id: 'red', label: 'أحمر', color: '#ef4444' },
+  { id: 'blue', label: 'أزرق', color: '#3b82f6' },
+  { id: 'green', label: 'أخضر', color: '#22c55e' },
+];
 
 async function compressImage(file: File): Promise<File> {
   if (!file.type.startsWith('image/') || file.size <= 700 * 1024) return file;
@@ -22,7 +30,6 @@ async function compressImage(file: File): Promise<File> {
   return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp', lastModified: file.lastModified });
 }
 
-// Pink QR with high contrast and no decorative elements for reliable scanning.
 function buildQrUrl(url: string) {
   const params = new URLSearchParams({ text: url, format: 'png', size: '600', margin: '6', dark: 'db2777', light: 'ffffff', ecLevel: 'H' });
   return `https://quickchart.io/qr?${params.toString()}`;
@@ -33,6 +40,7 @@ export default function AdminPage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
+  const [theme, setTheme] = useState<BirthdayTheme>('pink');
   const [photos, setPhotos] = useState<File[]>([]);
   const [music, setMusic] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,7 +62,7 @@ export default function AdminPage() {
     try {
       const optimizedPhotos = await Promise.all(photos.map(compressImage));
       const form = new FormData();
-      form.append('name', name); form.append('message', message);
+      form.append('name', name); form.append('message', message); form.append('theme', theme);
       optimizedPhotos.forEach(file => form.append('photos', file));
       if (music) form.append('music', music);
       const res = await fetch('/api/birthdays', { method: 'POST', body: form });
@@ -86,6 +94,17 @@ export default function AdminPage() {
         <form onSubmit={create} className="space-y-6 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
           <div><label className="mb-2 block text-sm text-white/70">اسم المستلم</label><input value={name} onChange={e => setName(e.target.value)} required placeholder="مثلاً Sara" className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-red-500/50" /></div>
           <div><label className="mb-2 block text-sm text-white/70">الرسالة</label><textarea value={message} onChange={e => setMessage(e.target.value)} required rows={6} placeholder="اكتب رسالتك هنا..." className="w-full resize-y rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-red-500/50" /></div>
+          <div>
+            <label className="mb-3 block text-sm text-white/70">لون البطاقة</label>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {themeOptions.map(option => (
+                <button key={option.id} type="button" onClick={() => setTheme(option.id)} className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${theme === option.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-black/20 hover:bg-white/5'}`}>
+                  <span className="h-4 w-4 rounded-full" style={{ backgroundColor: option.color }} />
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div><label className="mb-2 flex items-center gap-2 text-sm text-white/70"><ImagePlus size={17} /> الصور</label><input type="file" accept="image/*" multiple required onChange={e => setPhotos(Array.from(e.target.files || []))} className="block w-full cursor-pointer rounded-2xl border border-dashed border-white/15 bg-black/20 p-4 text-sm text-white/60" />{previews.length > 0 && <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">{previews.map(({ file, url }) => <div key={file.name + file.lastModified} className="aspect-square overflow-hidden rounded-xl border border-white/10"><img src={url} alt="preview" className="h-full w-full object-cover" /></div>)}</div>}</div>
           <div><label className="mb-2 flex items-center gap-2 text-sm text-white/70"><Music2 size={17} /> الأغنية</label><input type="file" accept="audio/*" required onChange={e => setMusic(e.target.files?.[0] || null)} className="block w-full cursor-pointer rounded-2xl border border-dashed border-white/15 bg-black/20 p-4 text-sm text-white/60" />{music && <p className="mt-2 text-sm text-white/50">{music.name}</p>}</div>
           {error && <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>}
