@@ -30,8 +30,8 @@ async function compressImage(file: File): Promise<File> {
   return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp', lastModified: file.lastModified });
 }
 
-function buildQrUrl(url: string) {
-  const params = new URLSearchParams({ text: url, format: 'png', size: '600', margin: '6', dark: 'db2777', light: 'ffffff', ecLevel: 'H' });
+function buildQrUrl(url: string, color: string) {
+  const params = new URLSearchParams({ text: url, format: 'png', size: '600', margin: '6', dark: color.replace('#', ''), light: 'ffffff', ecLevel: 'H' });
   return `https://quickchart.io/qr?${params.toString()}`;
 }
 
@@ -48,7 +48,8 @@ export default function AdminPage() {
   const [createdUrl, setCreatedUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const previews = useMemo(() => photos.map(file => ({ file, url: URL.createObjectURL(file) })), [photos]);
-  const qrUrl = useMemo(() => createdUrl ? buildQrUrl(createdUrl) : '', [createdUrl]);
+  const selectedThemeColor = themeOptions.find(option => option.id === theme)?.color || '#ec4899';
+  const qrUrl = useMemo(() => createdUrl ? buildQrUrl(createdUrl, selectedThemeColor) : '', [createdUrl, selectedThemeColor]);
 
   async function login(e: FormEvent) {
     e.preventDefault(); setError('');
