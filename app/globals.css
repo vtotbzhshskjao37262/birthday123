@@ -147,3 +147,6 @@
 [data-birthday-theme] [class*="bg-pink-900"] { background-color: color-mix(in srgb, var(--birthday-dark) 20%, transparent) !important; }
 [data-birthday-theme] [class*="border-pink-400"] { border-color: color-mix(in srgb, var(--birthday-accent) 20%, transparent) !important; }
 [data-birthday-theme] [class*="text-pink-200"] { color: color-mix(in srgb, var(--birthday-accent-soft) 80%, white) !important; }
+[data-birthday-theme] [class*="radial-gradient"] { background: radial-gradient(circle at center, color-mix(in srgb, var(--birthday-accent) 15%, transparent) 0%, transparent 70%) !important; }
+[data-birthday-theme] stop:first-child { stop-color: var(--birthday-accent) !important; }
+[data-birthday-theme] stop:last-child { stop-color: var(--birthday-accent-soft) !important; }
