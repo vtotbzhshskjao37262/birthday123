@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import { Check, Copy, Heart, ImagePlus, LockKeyhole, Music2, UploadCloud } from 'lucide-react';
+import { Check, Copy, Download, Heart, ImagePlus, LockKeyhole, Music2, UploadCloud } from 'lucide-react';
 
 async function compressImage(file: File): Promise<File> {
   if (!file.type.startsWith('image/') || file.size <= 700 * 1024) return file;
@@ -170,6 +170,9 @@ export default function AdminPage() {
               <div className="mb-3 flex items-center gap-2 text-pink-200"><Heart size={18} className="fill-pink-500 text-pink-500" /> QR Code</div>
               <img src={qrUrl} alt="QR code for birthday card" className="h-64 w-64 rounded-2xl bg-white p-3 shadow-2xl sm:h-72 sm:w-72" />
               <p className="mt-4 text-center text-sm text-white/60">امسح الكود لفتح بطاقة عيد الميلاد مباشرة</p>
+              <a href={qrUrl} download={`birthday-qr-${name || 'card'}.png`} target="_blank" rel="noreferrer" className="mt-4 flex items-center gap-2 rounded-xl bg-pink-500 px-5 py-2.5 text-sm font-semibold transition hover:bg-pink-400">
+                <Download size={17} /> حفظ QR كصورة
+              </a>
             </div>
             <button type="button" onClick={async () => { await navigator.clipboard.writeText(createdUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15">
               <Copy size={16} /> {copied ? 'تم النسخ' : 'نسخ الرابط'}
