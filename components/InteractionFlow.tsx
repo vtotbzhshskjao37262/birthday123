@@ -10,13 +10,7 @@ const BackgroundHearts = () => {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {[...Array(10)].map((_, i) => (
-                <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: '110vh', x: `${(i * 10) + Math.random() * 5}%`, scale: 0.5 }}
-                    animate={{ opacity: [0, 0.2, 0], y: '-10vh', rotate: [0, 180], scale: [0.5, 0.8, 0.5] }}
-                    transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, delay: i * 2, ease: 'linear' }}
-                    className="absolute text-red-500/10"
-                >
+                <motion.div key={i} initial={{ opacity: 0, y: '110vh', x: `${(i * 10) + Math.random() * 5}%`, scale: 0.5 }} animate={{ opacity: [0, 0.2, 0], y: '-10vh', rotate: [0, 180], scale: [0.5, 0.8, 0.5] }} transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, delay: i * 2, ease: 'linear' }} className="absolute text-red-500/10">
                     <Heart size={30} fill="currentColor" />
                 </motion.div>
             ))}
@@ -41,7 +35,7 @@ const LoveModeStep = ({ onComplete }: { onComplete: () => void }) => {
                     </motion.div>
                 </div>
                 <div className="flex flex-col items-center space-y-6">
-                    <span className={`text-2xl sm:text-3xl font-playfair text-center transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>A Little Birthday Surprise...</span>
+                    <span className={`text-xl sm:text-2xl font-playfair text-center transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>A Little Birthday Surprise...</span>
                     <button onClick={() => setIsOn(!isOn)} className={`group relative w-32 h-16 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] p-1.5 focus:outline-none ${isOn ? 'bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'bg-white/10'}`}>
                         <motion.div animate={{ x: isOn ? 64 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }} className="w-13 h-13 bg-white rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.2)] flex items-center justify-center pointer-events-none">
                             <Heart size={24} className={`transition-colors duration-500 ${isOn ? 'text-red-500 fill-red-500' : 'text-gray-300'}`} />
@@ -63,7 +57,7 @@ const TicTacToeStep = ({ onComplete }: { onComplete: () => void }) => {
     const [winner, setWinner] = useState<string | null>(null);
     const [message, setMessage] = useState("Let's play a little birthday game...");
     const checkWinner = useCallback((squares: (string | null)[]) => {
-        const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+        const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 4, 6], [0, 4, 8]];
         for (const [a, b, c] of lines) {
             if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) return squares[a];
         }
@@ -163,7 +157,7 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
                 <div className="z-10 flex flex-col items-center pb-4">
                     <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }}><Heart className="w-16 h-16 text-red-500 fill-red-500 mb-2" /></motion.div>
                     <div className="text-6xl font-black text-white font-mono tracking-tighter">{progress}<span className="text-red-400 text-3xl">%</span></div>
-                    <span className="text-lg sm:text-xl text-white/60 font-playfair italic mt-2 tracking-widest text-center">Let's see how special today is... ❤️</span>
+                    <span className="text-sm sm:text-base text-white/60 font-playfair italic mt-2 tracking-widest text-center">Let's see how special today is... ❤️</span>
                 </div>
             </div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/5"><motion.div className="h-full bg-gradient-to-r from-red-500 to-pink-500" animate={{ width: `${progress}%` }} /></div>
