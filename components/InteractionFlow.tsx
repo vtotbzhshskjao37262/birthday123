@@ -41,7 +41,7 @@ const LoveModeStep = ({ onComplete }: { onComplete: () => void }) => {
                     </motion.div>
                 </div>
                 <div className="flex flex-col items-center space-y-6">
-                    <span className={`text-5xl font-playfair transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>A Little Birthday Surprise...</span>
+                    <span className={`text-2xl sm:text-3xl font-playfair text-center transition-colors duration-1000 ${isOn ? 'text-white' : 'text-white/40'}`}>A Little Birthday Surprise...</span>
                     <button onClick={() => setIsOn(!isOn)} className={`group relative w-32 h-16 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] p-1.5 focus:outline-none ${isOn ? 'bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'bg-white/10'}`}>
                         <motion.div animate={{ x: isOn ? 64 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }} className="w-13 h-13 bg-white rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.2)] flex items-center justify-center pointer-events-none">
                             <Heart size={24} className={`transition-colors duration-500 ${isOn ? 'text-red-500 fill-red-500' : 'text-gray-300'}`} />
@@ -163,7 +163,7 @@ const LoveMeterStep = ({ onComplete }: { onComplete: () => void }) => {
                 <div className="z-10 flex flex-col items-center pb-4">
                     <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }}><Heart className="w-16 h-16 text-red-500 fill-red-500 mb-2" /></motion.div>
                     <div className="text-6xl font-black text-white font-mono tracking-tighter">{progress}<span className="text-red-400 text-3xl">%</span></div>
-                    <span className="text-2xl text-white/60 font-playfair italic mt-2 tracking-widest">Let's see how special today is... ❤️</span>
+                    <span className="text-lg sm:text-xl text-white/60 font-playfair italic mt-2 tracking-widest text-center">Let's see how special today is... ❤️</span>
                 </div>
             </div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/5"><motion.div className="h-full bg-gradient-to-r from-red-500 to-pink-500" animate={{ width: `${progress}%` }} /></div>
