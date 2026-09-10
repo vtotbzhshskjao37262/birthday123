@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import DomeGallery from '@/components/DomeGallery';
 import InteractionFlow from '@/components/InteractionFlow';
-import type { BirthdayConfig } from '@/lib/birthday';
+import type { BirthdayConfig, BirthdayTheme } from '@/lib/birthday';
 import { Heart, Volume2, VolumeX } from 'lucide-react';
 
-export default function BirthdayExperience({ birthday }: { birthday: BirthdayConfig }) {
+export default function BirthdayExperience({ birthday, theme = 'pink' }: { birthday: BirthdayConfig; theme?: BirthdayTheme }) {
   const [showGallery, setShowGallery] = useState(false);
   const [musicOn, setMusicOn] = useState(true);
 
   return (
-    <main className="w-screen h-screen bg-[#060010] overflow-hidden">
+    <main data-birthday-theme={theme} className="birthday-theme w-screen h-screen bg-[#060010] overflow-hidden">
       {!showGallery ? (
         <InteractionFlow name={birthday.name} onFlowComplete={() => setShowGallery(true)} />
       ) : (
