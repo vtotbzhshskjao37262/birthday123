@@ -34,6 +34,27 @@ async function compressImage(file: File): Promise<File> {
   });
 }
 
+function buildQrUrl(url: string) {
+  const heartSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#ec4899" d="M50 86S12 63 12 35C12 17 33 8 50 25 67 8 88 17 88 35c0 28-38 51-38 51z"/></svg>`;
+  const heartDataUrl = `data:image/svg+xml;base64,${btoa(heartSvg)}`;
+  const params = new URLSearchParams({
+    text: url,
+    format: 'png',
+    size: '600',
+    margin: '4',
+    dark: 'ec4899',
+    light: 'ffffff',
+    dotStyle: 'rounded',
+    finderStyle: 'rounded',
+    finderDotStyle: 'dot',
+    finderColor: 'db2777',
+    ecLevel: 'H',
+    centerImageUrl: heartDataUrl,
+    centerImageSizeRatio: '0.18',
+  });
+  return `https://quickchart.io/qr?${params.toString()}`;
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
@@ -47,6 +68,7 @@ export default function AdminPage() {
   const [copied, setCopied] = useState(false);
 
   const previews = useMemo(() => photos.map(file => ({ file, url: URL.createObjectURL(file) })), [photos]);
+  const qrUrl = useMemo(() => createdUrl ? buildQrUrl(createdUrl) : '', [createdUrl]);
 
   async function login(e: FormEvent) {
     e.preventDefault();
@@ -144,7 +166,12 @@ export default function AdminPage() {
           <div className="mt-6 rounded-[2rem] border border-green-400/20 bg-green-400/10 p-6">
             <div className="flex items-center gap-2 text-green-300"><Check size={20} /> تم إنشاء البطاقة</div>
             <div className="mt-4 break-all rounded-2xl bg-black/20 p-4 font-mono text-sm text-white/80">{createdUrl}</div>
-            <button type="button" onClick={async () => { await navigator.clipboard.writeText(createdUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="mt-3 flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15">
+            <div className="mt-5 flex flex-col items-center rounded-3xl border border-pink-400/20 bg-black/20 p-5">
+              <div className="mb-3 flex items-center gap-2 text-pink-200"><Heart size={18} className="fill-pink-500 text-pink-500" /> QR Code</div>
+              <img src={qrUrl} alt="QR code for birthday card" className="h-64 w-64 rounded-2xl bg-white p-3 shadow-2xl sm:h-72 sm:w-72" />
+              <p className="mt-4 text-center text-sm text-white/60">امسح الكود لفتح بطاقة عيد الميلاد مباشرة</p>
+            </div>
+            <button type="button" onClick={async () => { await navigator.clipboard.writeText(createdUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15">
               <Copy size={16} /> {copied ? 'تم النسخ' : 'نسخ الرابط'}
             </button>
           </div>
