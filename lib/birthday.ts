@@ -117,3 +117,85 @@ export async function getBirthday(slug: string) {
   const rows = await response.json();
   return (rows[0] as BirthdayConfig | undefined) ?? null;
 }
+
+
+export async function listBirthdays() {
+  const response = await supabaseFetch('/rest/v1/birthday_configs?select=*&order=created_at.desc');
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Database list failed: ${text}`);
+  }
+  return await response.json() as BirthdayConfig[];
+}
+
+function storagePathFromPublicUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const marker = '/storage/v1/object/public/birthday-assets/';
+    const index = url.pathname.indexOf(marker);
+    if (index < 0) return null;
+    return decodeURIComponent(url.pathname.slice(index + marker.length));
+  } catch {
+    return null;
+  }
+}
+
+async function removeStorageObjects(paths: string[]) {
+  const uniquePaths = [...new Set(paths.filter(Boolean))];
+  if (!uniquePaths.length) return;
+  const response = await supabaseFetch('/storage/v1/object/birthday-assets', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prefixes: uniquePaths }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Storage delete failed: ${text}`);
+  }
+}
+
+export async function deleteBirthdayAsset(id: string, assetUrl: string) {
+  const response = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}&select=*`);
+  if (!response.ok) throw new Error('تعذر قراءة المشروع');
+  const rows = await response.json() as BirthdayConfig[];
+  const birthday = rows[0];
+  if (!birthday) throw new Error('المشروع غير موجود');
+
+  const path = storagePathFromPublicUrl(assetUrl);
+  if (!path || !path.startsWith(`${id}/`)) throw new Error('مسار الملف غير صالح');
+
+  const isPhoto = birthday.photos.includes(assetUrl);
+  const isMusic = birthday.music_url === assetUrl;
+  if (!isPhoto && !isMusic) throw new Error('الملف غير مرتبط بهذا المشروع');
+
+  const patch = isPhoto
+    ? { photos: birthday.photos.filter(photo => photo !== assetUrl) }
+    : { music_url: null };
+  const update = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify(patch),
+  });
+  if (!update.ok) {
+    const text = await update.text();
+    throw new Error(`Database update failed: ${text}`);
+  }
+  await removeStorageObjects([path]);
+}
+
+export async function deleteBirthdayProject(id: string) {
+  const response = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}&select=id`);
+  if (!response.ok) throw new Error('تعذر قراءة المشروع');
+  const rows = await response.json() as { id: string }[];
+  if (!rows.length) throw new Error('المشروع غير موجود');
+
+  await removeStorageObjects([`${id}/`]);
+  const deletion = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+  });
+  if (!deletion.ok) {
+    const text = await deletion.text();
+    throw new Error(`Database delete failed: ${text}`);
+  }
+}
