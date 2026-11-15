@@ -194,7 +194,7 @@ export default function AdminPage() {
           <p className="text-xs text-white/40">يعرض {filteredProjects.length} من أصل {projects.length} مشروع.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             {filteredProjects.map(project => <article key={project.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-              {project.photos?.length > 0 && <div className="grid h-40 grid-cols-3 gap-1 overflow-hidden bg-black/30">{project.photos.slice(0, 3).map((photo, index) => <img key={photo} src={photo} alt={`صورة ${index + 1} من مشروع ${project.name}`} className="h-full min-h-0 w-full object-cover" />)}</div>}
+              {(project.photos?.length || 0) > 0 && <div className="grid h-40 grid-cols-3 gap-1 overflow-hidden bg-black/30">{project.photos.slice(0, 3).map((photo, index) => <img key={photo} src={photo} alt={`صورة ${index + 1} من مشروع ${project.name}`} className="h-full min-h-0 w-full object-cover" />)}</div>}
               <div className="p-4">
                 <h3 className="text-lg font-semibold">{project.name || 'مشروع بدون اسم'}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-white/55">{project.message}</p>
