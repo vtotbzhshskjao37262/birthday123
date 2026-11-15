@@ -170,7 +170,7 @@ export async function deleteBirthdayAsset(id: string, assetUrl: string) {
 
   const patch = isPhoto
     ? { photos: birthday.photos.filter(photo => photo !== assetUrl) }
-    : { music_url: null };
+    : { music_url: '' };
   const update = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -184,12 +184,18 @@ export async function deleteBirthdayAsset(id: string, assetUrl: string) {
 }
 
 export async function deleteBirthdayProject(id: string) {
-  const response = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}&select=id`);
+  const response = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}&select=id,photos,music_url`);
   if (!response.ok) throw new Error('تعذر قراءة المشروع');
-  const rows = await response.json() as { id: string }[];
-  if (!rows.length) throw new Error('المشروع غير موجود');
+  const rows = await response.json() as { id: string; photos: string[]; music_url: string | null }[];
+  const birthday = rows[0];
+  if (!birthday) throw new Error('المشروع غير موجود');
 
-  await removeStorageObjects([`${id}/`]);
+  const paths = [
+    ...(birthday.photos || []).map(storagePathFromPublicUrl),
+    birthday.music_url ? storagePathFromPublicUrl(birthday.music_url) : null,
+  ].filter((path): path is string => Boolean(path && path.startsWith(`${id}/`)));
+  await removeStorageObjects(paths);
+
   const deletion = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: { Prefer: 'return=minimal' },
