@@ -51,6 +51,7 @@ export default function AdminPage() {
   const [copied, setCopied] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
   const [projects, setProjects] = useState<BirthdayProject[]>([]);
+  const [projectSearch, setProjectSearch] = useState('');
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsError, setProjectsError] = useState('');
   const [selectedProject, setSelectedProject] = useState<BirthdayProject | null>(null);
@@ -58,6 +59,13 @@ export default function AdminPage() {
   const previews = useMemo(() => photos.map(file => ({ file, url: URL.createObjectURL(file) })), [photos]);
   const selectedThemeColor = themeOptions.find(option => option.id === theme)?.color || '#ec4899';
   const qrUrl = useMemo(() => createdUrl ? buildQrUrl(createdUrl, selectedThemeColor) : '', [createdUrl, selectedThemeColor]);
+  const filteredProjects = useMemo(() => {
+    const query = projectSearch.trim().toLocaleLowerCase();
+    if (!query) return projects;
+    return projects.filter(project => [project.name, project.message, project.slug].some(value => value?.toLocaleLowerCase().includes(query)));
+  }, [projects, projectSearch]);
+  const totalPhotos = useMemo(() => projects.reduce((sum, project) => sum + (project.photos?.length || 0), 0), [projects]);
+  const totalMusic = useMemo(() => projects.filter(project => Boolean(project.music_url)).length, [projects]);
 
   async function refreshProjects() {
     setProjectsLoading(true); setProjectsError('');
@@ -169,22 +177,31 @@ export default function AdminPage() {
         </form>
         </>}
         {showProjects && <section className="space-y-5">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div><h2 className="text-xl font-semibold">المشاريع المحفوظة</h2><p className="mt-1 text-sm text-white/50">{projects.length} مشروع</p></div>
-            <button type="button" onClick={() => void refreshProjects()} disabled={projectsLoading} className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15 disabled:opacity-50"><RefreshCw size={16} className={projectsLoading ? 'animate-spin' : ''} /> تحديث</button>
+          <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div><h2 className="text-xl font-semibold">أرشيف كل المشاريع</h2><p className="mt-1 text-sm text-white/50">كل البطاقات المحفوظة في قاعدة البيانات، مرتبة من الأحدث إلى الأقدم.</p></div>
+            <button type="button" onClick={() => void refreshProjects()} disabled={projectsLoading} className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15 disabled:opacity-50"><RefreshCw size={16} className={projectsLoading ? 'animate-spin' : ''} /> تحديث القائمة</button>
           </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-xs text-white/45">المشاريع</p><p className="mt-1 text-2xl font-bold">{projects.length}</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-xs text-white/45">الصور</p><p className="mt-1 text-2xl font-bold">{totalPhotos}</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-xs text-white/45">الأغاني</p><p className="mt-1 text-2xl font-bold">{totalMusic}</p></div>
+          </div>
+          <label className="block"><span className="mb-2 block text-sm text-white/65">ابحث في المشاريع بالاسم أو الرسالة أو الرابط</span><input value={projectSearch} onChange={e => setProjectSearch(e.target.value)} placeholder="اكتب اسم المشروع أو كلمة من الرسالة..." className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none transition focus:border-red-400/50" /></label>
           {projectsError && <p className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-200">{projectsError}</p>}
-          {projectsLoading && <p className="py-8 text-center text-white/50">جاري تحميل المشاريع...</p>}
+          {projectsLoading && <p className="py-8 text-center text-white/50">جاري تحميل كل المشاريع والملفات المرتبطة بها...</p>}
           {!projectsLoading && projects.length === 0 && <div className="rounded-2xl border border-dashed border-white/15 p-10 text-center text-white/50">ما فيش مشاريع محفوظة في قاعدة البيانات.</div>}
+          {!projectsLoading && projects.length > 0 && filteredProjects.length === 0 && <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center text-white/50">ما لقيناش مشروع يطابق بحثك.</div>}
+          <p className="text-xs text-white/40">يعرض {filteredProjects.length} من أصل {projects.length} مشروع.</p>
           <div className="grid gap-4 sm:grid-cols-2">
-            {projects.map(project => <article key={project.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-              {project.photos?.[0] && <img src={project.photos[0]} alt={`صور مشروع ${project.name}`} className="h-44 w-full object-cover" />}
+            {filteredProjects.map(project => <article key={project.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+              {project.photos?.length > 0 && <div className="grid h-40 grid-cols-3 gap-1 overflow-hidden bg-black/30">{project.photos.slice(0, 3).map((photo, index) => <img key={photo} src={photo} alt={`صورة ${index + 1} من مشروع ${project.name}`} className="h-full min-h-0 w-full object-cover" />)}</div>}
               <div className="p-4">
-                <h3 className="text-lg font-semibold">{project.name}</h3>
+                <h3 className="text-lg font-semibold">{project.name || 'مشروع بدون اسم'}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-white/55">{project.message}</p>
-                <p className="mt-2 text-xs text-white/35">{project.created_at ? new Date(project.created_at).toLocaleString('ar') : 'تاريخ الإنشاء غير متوفر'} · {project.photos?.length || 0} صور</p>
+                <p className="mt-2 text-xs text-white/40">{project.created_at ? new Date(project.created_at).toLocaleString('ar') : 'تاريخ الإنشاء غير متوفر'}</p>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/55"><span className="rounded-full bg-white/10 px-2 py-1">{project.photos?.length || 0} صور</span><span className="rounded-full bg-white/10 px-2 py-1">{project.music_url ? 'الأغنية موجودة' : 'بدون أغنية'}</span></div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button type="button" onClick={() => setSelectedProject(project)} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15"><Eye size={16} /> عرض المشروع</button>
+                  <button type="button" onClick={() => setSelectedProject(project)} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15"><Eye size={16} /> عرض كل التفاصيل</button>
                   <a href={`/birthday/${encodeURIComponent(project.slug)}`} target="_blank" rel="noreferrer" className="rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15">فتح البطاقة</a>
                   <button type="button" disabled={deleting === project.id} onClick={() => void removeProject(project.id)} className="flex items-center gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm text-red-200 hover:bg-red-500/20 disabled:opacity-50"><Trash2 size={16} /> {deleting === project.id ? 'جاري الحذف...' : 'حذف المشروع'}</button>
                 </div>
@@ -204,7 +221,7 @@ export default function AdminPage() {
               <a href={photo} target="_blank" rel="noreferrer"><img src={photo} alt={`صورة ${index + 1}`} className="aspect-square w-full object-cover" /></a>
               <button type="button" disabled={deleting === photo} onClick={() => void removeAsset(selectedProject, photo)} className="flex w-full items-center justify-center gap-2 bg-red-500/10 px-2 py-2 text-xs text-red-200 hover:bg-red-500/20 disabled:opacity-50"><Trash2 size={14} /> {deleting === photo ? 'جاري الحذف...' : 'حذف الصورة'}</button>
             </div>)}</div> : <p className="mt-3 text-sm text-white/45">لا توجد صور في هذا المشروع.</p>}
-            {selectedProject.music_url && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/5 p-3"><a href={selectedProject.music_url} target="_blank" rel="noreferrer" className="text-sm text-pink-200 underline">فتح ملف الأغنية</a><button type="button" disabled={deleting === selectedProject.music_url} onClick={() => void removeAsset(selectedProject, selectedProject.music_url!)} className="flex items-center gap-2 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-200"><Trash2 size={14} /> حذف الأغنية</button></div>}
+            {selectedProject.music_url && <div className="mt-5 space-y-3 rounded-xl bg-white/5 p-3"><div className="flex flex-wrap items-center justify-between gap-3"><a href={selectedProject.music_url} target="_blank" rel="noreferrer" className="text-sm text-pink-200 underline">فتح ملف الأغنية</a><button type="button" disabled={deleting === selectedProject.music_url} onClick={() => void removeAsset(selectedProject, selectedProject.music_url!)} className="flex items-center gap-2 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-200"><Trash2 size={14} /> حذف الأغنية</button></div><audio controls preload="none" src={selectedProject.music_url} className="w-full" /></div>}
             <div className="mt-6 flex justify-end"><button type="button" onClick={() => setSelectedProject(null)} className="rounded-xl bg-white/10 px-5 py-2.5 text-sm hover:bg-white/15">إغلاق</button></div>
           </div>
         </div>}
