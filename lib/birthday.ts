@@ -120,12 +120,27 @@ export async function getBirthday(slug: string) {
 
 
 export async function listBirthdays() {
-  const response = await supabaseFetch('/rest/v1/birthday_configs?select=*&order=created_at.desc');
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Database list failed: ${text}`);
+  // Read every saved project in stable pages instead of relying on the API's default row limit.
+  const pageSize = 500;
+  const allBirthdays: BirthdayConfig[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await supabaseFetch(
+      `/rest/v1/birthday_configs?select=*&order=created_at.desc,id.asc&limit=${pageSize}&offset=${offset}`,
+    );
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Database list failed: ${text}`);
+    }
+
+    const rows = await response.json() as BirthdayConfig[];
+    allBirthdays.push(...rows);
+    if (rows.length < pageSize) break;
+    offset += pageSize;
   }
-  return await response.json() as BirthdayConfig[];
+
+  return allBirthdays;
 }
 
 function storagePathFromPublicUrl(value: string) {
