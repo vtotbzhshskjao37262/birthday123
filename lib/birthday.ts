@@ -10,6 +10,7 @@ export type BirthdayConfig = {
   photos: string[];
   music_url: string;
   created_at?: string;
+  is_active?: boolean;
 };
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -115,9 +116,25 @@ export async function getBirthday(slug: string) {
   const response = await supabaseFetch(`/rest/v1/birthday_configs?slug=eq.${encodeURIComponent(slug)}&select=*`);
   if (!response.ok) return null;
   const rows = await response.json();
-  return (rows[0] as BirthdayConfig | undefined) ?? null;
+  const birthday = (rows[0] as BirthdayConfig | undefined) ?? null;
+  return birthday && birthday.is_active !== false ? birthday : null;
 }
 
+
+export async function setBirthdayActive(id: string, isActive: boolean) {
+  const response = await supabaseFetch(`/rest/v1/birthday_configs?id=eq.${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify({ is_active: isActive }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Database status update failed: ${text}`);
+  }
+  const rows = await response.json() as BirthdayConfig[];
+  if (!rows[0]) throw new Error('المشروع غير موجود');
+  return rows[0];
+}
 
 export async function listBirthdays() {
   // Read every saved project in stable pages instead of relying on the API's default row limit.
