@@ -1,10 +1,10 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import { Check, Copy, Download, Eye, FolderOpen, Heart, ImagePlus, LockKeyhole, Music2, RefreshCw, Trash2, UploadCloud, X } from 'lucide-react';
+import { Check, Copy, Download, Eye, FolderOpen, Heart, ImagePlus, LockKeyhole, Music2, RefreshCw, Trash2, UploadCloud, X, Power } from 'lucide-react';
 import type { BirthdayTheme } from '@/lib/birthday';
 
-type BirthdayProject = { id: string; slug: string; name: string; message: string; photos: string[]; music_url: string | null; created_at?: string };
+type BirthdayProject = { id: string; slug: string; name: string; message: string; photos: string[]; music_url: string | null; created_at?: string; is_active?: boolean };
 
 const themeOptions: { id: BirthdayTheme; label: string; color: string }[] = [
   { id: 'pink', label: 'وردي', color: '#ec4899' },
@@ -56,6 +56,7 @@ export default function AdminPage() {
   const [projectsError, setProjectsError] = useState('');
   const [selectedProject, setSelectedProject] = useState<BirthdayProject | null>(null);
   const [deleting, setDeleting] = useState('');
+  const [toggling, setToggling] = useState('');
   const previews = useMemo(() => photos.map(file => ({ file, url: URL.createObjectURL(file) })), [photos]);
   const selectedThemeColor = themeOptions.find(option => option.id === theme)?.color || '#ec4899';
   const qrUrl = useMemo(() => createdUrl ? buildQrUrl(createdUrl, selectedThemeColor) : '', [createdUrl, selectedThemeColor]);
@@ -90,6 +91,28 @@ export default function AdminPage() {
       await refreshProjects();
     } catch (err) { setProjectsError(err instanceof Error ? err.message : 'فشل الحذف'); }
     finally { setDeleting(''); }
+  }
+
+  async function toggleProjectActive(project: BirthdayProject) {
+    const nextActive = project.is_active === false;
+    const action = nextActive ? 'إعادة تفعيل' : 'تعطيل';
+    const detail = nextActive ? 'سيعود الرابط القديم للعمل.' : 'سيتوقف الرابط عن عرض البطاقة، مع بقاء المشروع وملفاته محفوظة.';
+    if (!window.confirm('متأكد إنك تبي ' + action + ' البطاقة؟ ' + detail)) return;
+    setToggling(project.id); setProjectsError('');
+    try {
+      const res = await fetch('/api/admin/projects', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: project.id, is_active: nextActive }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'تعذر تحديث حالة البطاقة');
+      await refreshProjects();
+    } catch (err) {
+      setProjectsError(err instanceof Error ? err.message : 'تعذر تحديث حالة البطاقة');
+    } finally {
+      setToggling('');
+    }
   }
 
   async function removeAsset(project: BirthdayProject, assetUrl: string) {
@@ -198,11 +221,13 @@ export default function AdminPage() {
               <div className="p-4">
                 <h3 className="text-lg font-semibold">{project.name || 'مشروع بدون اسم'}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-white/55">{project.message}</p>
+                <p className={'mt-2 inline-flex rounded-full px-2 py-1 text-xs ' + (project.is_active === false ? 'bg-amber-500/15 text-amber-200' : 'bg-green-500/15 text-green-200')}>{project.is_active === false ? 'البطاقة معطّلة' : 'البطاقة مفعّلة'}</p>
                 <p className="mt-2 text-xs text-white/40">{project.created_at ? new Date(project.created_at).toLocaleString('ar') : 'تاريخ الإنشاء غير متوفر'}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/55"><span className="rounded-full bg-white/10 px-2 py-1">{project.photos?.length || 0} صور</span><span className="rounded-full bg-white/10 px-2 py-1">{project.music_url ? 'الأغنية موجودة' : 'بدون أغنية'}</span></div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button type="button" onClick={() => setSelectedProject(project)} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15"><Eye size={16} /> عرض كل التفاصيل</button>
-                  <a href={`/birthday/${encodeURIComponent(project.slug)}`} target="_blank" rel="noreferrer" className="rounded-xl bg-white/10 px-3 py-2 text-sm hover:bg-white/15">فتح البطاقة</a>
+                  <a href={`/birthday/${encodeURIComponent(project.slug)}`} target="_blank" rel="noreferrer" className={'rounded-xl px-3 py-2 text-sm ' + (project.is_active === false ? 'pointer-events-none bg-white/5 text-white/30' : 'bg-white/10 hover:bg-white/15')}>فتح البطاقة</a>
+                  <button type="button" disabled={toggling === project.id} onClick={() => void toggleProjectActive(project)} className={'flex items-center gap-2 rounded-xl border px-3 py-2 text-sm disabled:opacity-50 ' + (project.is_active === false ? 'border-green-400/20 bg-green-500/10 text-green-200 hover:bg-green-500/20' : 'border-amber-400/20 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20')}><Power size={16} /> {toggling === project.id ? 'جاري التحديث...' : project.is_active === false ? 'إعادة تفعيل' : 'تعطيل البطاقة'}</button>
                   <button type="button" disabled={deleting === project.id} onClick={() => void removeProject(project.id)} className="flex items-center gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm text-red-200 hover:bg-red-500/20 disabled:opacity-50"><Trash2 size={16} /> {deleting === project.id ? 'جاري الحذف...' : 'حذف المشروع'}</button>
                 </div>
               </div>
