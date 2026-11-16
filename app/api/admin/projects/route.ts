@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { deleteBirthdayAsset, deleteBirthdayProject, isAdminTokenValid, listBirthdays } from '@/lib/birthday';
+import { deleteBirthdayAsset, deleteBirthdayProject, isAdminTokenValid, listBirthdays, setBirthdayActive } from '@/lib/birthday';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,6 +18,22 @@ export async function GET() {
   } catch (error) {
     console.error('Admin project list failed:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'تعذر تحميل المشاريع' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  if (!await requireAdmin()) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  try {
+    const body = await request.json();
+    const id = typeof body.id === 'string' ? body.id : '';
+    if (!id || typeof body.is_active !== 'boolean') {
+      return NextResponse.json({ error: 'معرّف المشروع وحالة التفعيل مطلوبان' }, { status: 400 });
+    }
+    const birthday = await setBirthdayActive(id, body.is_active);
+    return NextResponse.json({ ok: true, birthday });
+  } catch (error) {
+    console.error('Admin project status update failed:', error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'تعذر تحديث حالة المشروع' }, { status: 500 });
   }
 }
 
